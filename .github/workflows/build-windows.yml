@@ -57,6 +57,15 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $source = Join-Path $PWD 'easytshark-server-cpp'
+          foreach ($file in @(
+            (Join-Path $source 'tshark_server/third_library/ip2region/xdb_bench.cc'),
+            (Join-Path $source 'tshark_server/third_library/ip2region/xdb_search.cc')
+          )) {
+            $text = Get-Content $file -Raw
+            $text = $text.Replace("#include <windows.h>`r`n#include <winsock2.h>", "#include <winsock2.h>`r`n#include <windows.h>")
+            $text = $text.Replace("#include <windows.h>`n#include <winsock2.h>", "#include <winsock2.h>`n#include <windows.h>")
+            Set-Content -Path $file -Value $text -NoNewline
+          }
           $build = Join-Path $source 'build'
           cmake -S $source -B $build -G Ninja -DCMAKE_BUILD_TYPE=Release
           cmake --build $build --config Release --parallel
