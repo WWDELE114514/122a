@@ -82,7 +82,7 @@ jobs:
           $build = Join-Path $source 'build'
           $include = Join-Path $env:NPCAP_SDK 'Include'
           $lib = Join-Path $env:NPCAP_SDK 'Lib/x64'
-          cmake -S $source -B $build -G Ninja -DCMAKE_BUILD_TYPE=Release "-DCMAKE_CXX_FLAGS=/I`"$include`"" "-DCMAKE_EXE_LINKER_FLAGS=/LIBPATH:`"$lib`""
+          cmake -S $source -B $build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17 "-DCMAKE_CXX_FLAGS=/I`"$include`"" "-DCMAKE_EXE_LINKER_FLAGS=/LIBPATH:`"$lib`""
           cmake --build $build --config Release --parallel
           $server = Join-Path $build 'tshark_server.exe'
           if (!(Test-Path $server)) { throw "Missing native server: $server" }
