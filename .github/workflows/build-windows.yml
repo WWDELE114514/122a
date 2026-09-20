@@ -40,6 +40,18 @@ jobs:
         shell: pwsh
         run: choco install wireshark -y --no-progress
 
+      - name: Install Npcap SDK
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $zip = Join-Path $env:RUNNER_TEMP 'npcap-sdk.zip'
+          $sdk = Join-Path $env:RUNNER_TEMP 'npcap-sdk'
+          Invoke-WebRequest 'https://npcap.com/dist/npcap-sdk-1.15.zip' -OutFile $zip
+          Expand-Archive -Path $zip -DestinationPath $sdk -Force
+          $root = Get-ChildItem $sdk -Directory -Recurse | Where-Object { Test-Path (Join-Path $_.FullName 'Include/pcap.h') } | Select-Object -First 1
+          if (!$root) { throw 'Npcap SDK headers were not found' }
+          "NPCAP_SDK=$($root.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
       - name: Prepare Wireshark resources
         shell: pwsh
         run: |
@@ -67,7 +79,9 @@ jobs:
             Set-Content -Path $file -Value $text -NoNewline
           }
           $build = Join-Path $source 'build'
-          cmake -S $source -B $build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          $include = Join-Path $env:NPCAP_SDK 'Include'
+          $lib = Join-Path $env:NPCAP_SDK 'Lib/x64'
+          cmake -S $source -B $build -G Ninja -DCMAKE_BUILD_TYPE=Release "-DCMAKE_CXX_FLAGS=/I`"$include`"" "-DCMAKE_EXE_LINKER_FLAGS=/LIBPATH:`"$lib`""
           cmake --build $build --config Release --parallel
           $server = Join-Path $build 'tshark_server.exe'
           if (!(Test-Path $server)) { throw "Missing native server: $server" }
