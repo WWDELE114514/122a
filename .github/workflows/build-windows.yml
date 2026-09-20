@@ -79,6 +79,10 @@ jobs:
             $text = $text.Replace("#include <windows.h>`n#include <winsock2.h>", "#include <winsock2.h>`n#include <windows.h>")
             Set-Content -Path $file -Value $text -NoNewline
           }
+          $cmakeFile = Join-Path $source 'CMakeLists.txt'
+          $cmakeText = Get-Content $cmakeFile -Raw
+          $cmakeText = $cmakeText.Replace('set(CMAKE_CXX_STANDARD 14)', 'set(CMAKE_CXX_STANDARD 17)')
+          Set-Content -Path $cmakeFile -Value $cmakeText -NoNewline
           $build = Join-Path $source 'build'
           $include = Join-Path $env:NPCAP_SDK 'Include'
           $lib = Join-Path $env:NPCAP_SDK 'Lib/x64'
