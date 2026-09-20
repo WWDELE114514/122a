@@ -58,9 +58,9 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $source = Join-Path $PWD 'easytshark-server-cpp'
           $build = Join-Path $source 'build'
-          cmake -S $source -B $build -G 'Visual Studio 17 2022' -A x64
+          cmake -S $source -B $build -G Ninja -DCMAKE_BUILD_TYPE=Release
           cmake --build $build --config Release --parallel
-          $server = Join-Path $build 'Release/tshark_server.exe'
+          $server = Join-Path $build 'tshark_server.exe'
           if (!(Test-Path $server)) { throw "Missing native server: $server" }
           New-Item -ItemType Directory -Force -Path 'easytshark-frontend/resources/tshark_win' | Out-Null
           Copy-Item $server 'easytshark-frontend/resources/tshark_win/tshark_server.exe' -Force
