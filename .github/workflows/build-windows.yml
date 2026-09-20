@@ -48,8 +48,9 @@ jobs:
           $sdk = Join-Path $env:RUNNER_TEMP 'npcap-sdk'
           Invoke-WebRequest 'https://npcap.com/dist/npcap-sdk-1.15.zip' -OutFile $zip
           Expand-Archive -Path $zip -DestinationPath $sdk -Force
-          $root = Get-ChildItem $sdk -Directory -Recurse | Where-Object { Test-Path (Join-Path $_.FullName 'Include/pcap.h') } | Select-Object -First 1
-          if (!$root) { throw 'Npcap SDK headers were not found' }
+          $header = Get-ChildItem $sdk -File -Recurse -Filter pcap.h | Select-Object -First 1
+          if (!$header) { throw 'Npcap SDK headers were not found' }
+          $root = $header.Directory.Parent
           "NPCAP_SDK=$($root.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
       - name: Prepare Wireshark resources
